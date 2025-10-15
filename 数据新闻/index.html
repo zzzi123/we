@@ -1,0 +1,2363 @@
+<html lang="zh-CN"><head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>农村女性与数字经济：机遇与挑战</title>
+    <!-- 引入Chart.js、ECharts及插件 -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/echarts/dist/echarts.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/echarts/map/js/china.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
+    <!-- 引入d3.js用于金字塔图表 -->
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <!-- 引入Font Awesome图标库 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background-color: #0a0e17;
+            overflow-x: hidden;
+            font-family: 'Noto Sans SC', 'Microsoft YaHei', sans-serif;
+            color: rgba(255, 255, 255, 0.85);
+            line-height: 1.8;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+        
+        /* 全屏星空画布 */
+        #starCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(to bottom, #0a0e17, #13182b, #0a0e17);
+            z-index: 1;
+        }
+        
+        /* 标题容器 */
+        .title-container {
+            position: relative;
+            z-index: 2;
+            text-align: center;
+            padding: 0 20px;
+            width: 100%;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            margin-top: 40vh;
+            margin-bottom: 40vh;
+        }
+        
+        .main-title {
+            font-weight: 300;
+            letter-spacing: 2px;
+            line-height: 1.3;
+            text-shadow: 0 0 15px rgba(255, 220, 80, 0.7);
+            font-family: "FZYaoTi", "方正姚体", "STKaiti", "华文楷体", "KaiTi", "楷体", serif;
+        }
+        
+        .highlight {
+            display: inline-block;
+            font-size: 4.5rem;
+            animation: pulse 4s infinite;
+        }
+        
+        .normal-text {
+            font-size: 2.8rem;
+            opacity: 0.9;
+        }
+        
+        /* 新增副标题样式 */
+        .subtitle {
+            font-size: 1.5rem;
+            color: rgba(255, 255, 255, 0.7);
+            margin-top: 20px;
+            text-align: center;
+            width: 100%;
+            font-style: italic;
+            letter-spacing: 1px;
+        }
+        
+        /* 内容容器 - 移除边框和背景，只保留文字和图表 */
+        .content-container {
+            position: relative;
+            z-index: 2;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px;
+            margin-top: 20vh;
+            margin-bottom: 100px;
+        }
+        
+        /* 数据可视化通用样式 */
+        .data-visualization {
+            display: block;
+            max-width: 100%;
+            height: auto;
+            margin: 30px auto;
+            border-radius: 8px;
+            transition: transform 0.3s ease;
+        }
+        
+        .data-visualization:hover {
+            transform: scale(1.02);
+        }
+        
+        /* 图表容器通用样式 */
+        .chart-wrapper {
+            margin: 30px auto;
+            width: 100%;
+            padding: 20px;
+        }
+        
+        /* 冷链物流地图容器 */
+        #map-container {
+            width: 100%;
+            height: 600px;
+        }
+        
+        /* 单图表容器 */
+        .single-chart-container {
+            width: 100%;
+            height: 500px;
+        }
+        
+        .data-source {
+            font-size: 14px;
+            color: #b0b0b0;
+            margin-top: 15px;
+            text-align: right;
+        }
+        
+        .quote {
+            font-size: 1.8rem;
+            font-style: italic;
+            text-align: center;
+            margin: 40px 0;
+            padding: 20px;
+            border-left: 3px solid rgba(255, 220, 80, 0.7);
+            background: rgba(255, 255, 255, 0.05);
+        }
+        
+        .section-title {
+            font-size: 1.8rem;
+            color: rgba(255, 220, 80, 0.9);
+            margin: 30px 0 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(255, 220, 80, 0.3);
+        }
+        
+        .paragraph {
+            margin-bottom: 25px;
+            text-align: justify;
+        }
+        
+        .stats {
+            background: rgba(255, 220, 80, 0.1);
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+            border-left: 3px solid rgba(255, 220, 80, 0.7);
+        }
+        
+        .section-number {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-right: 10px;
+            color: rgba(255, 220, 80, 0.9);
+        }
+        
+        /* 动画效果 */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @keyframes pulse {
+            0% { text-shadow: 0 0 15px rgba(255, 220, 80, 0.7); }
+            50% { text-shadow: 0 0 25px rgba(255, 220, 80, 0.9); }
+            100% { text-shadow: 0 0 15px rgba(255, 220, 80, 0.7); }
+        }
+        
+        /* 农村女性教育数据样式 */
+        .education-dashboard {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            gap: 30px;
+            margin: 30px 0;
+        }
+        
+        .education-chart-container {
+            padding: 20px;
+            margin: 0;
+        }
+        
+        .education-chart-title {
+            color: rgba(255, 220, 80, 0.9);
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(255, 220, 80, 0.3);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .education-chart-wrapper {
+            height: 300px;
+            position: relative;
+        }
+        
+        /* 金字塔图表容器样式 */
+        #pyramidChartContainer {
+            margin: 30px 0;
+        }
+        
+        .pyramid-header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .pyramid-title {
+            font-size: 2.5rem;
+            background: linear-gradient(90deg, #4cc9f0, #4361ee);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            margin-bottom: 10px;
+        }
+        
+        .pyramid-subtitle {
+            font-size: 1.2rem;
+            color: #b0b0b0;
+            margin-bottom: 15px;
+        }
+        
+        .pyramid-description {
+            max-width: 800px;
+            margin: 0 auto 30px;
+            line-height: 1.6;
+            text-align: center;
+            color: #cccccc;
+        }
+        
+        .pyramid-controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .pyramid-controls button {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 220, 80, 0.5);
+            color: #ffffff;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .pyramid-controls button:hover {
+            background: rgba(255, 220, 80, 0.2);
+        }
+        
+        .pyramid-controls button.active {
+            background: rgba(76, 201, 240, 0.5);
+            border-color: rgba(76, 201, 240, 0.8);
+        }
+        
+        .pyramid-legend {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+        
+        .pyramid-legend-item {
+            display: flex;
+            align-items: center;
+            padding: 8px 15px;
+            border-radius: 5px;
+            background: rgba(255, 255, 255, 0.05);
+        }
+        
+        .pyramid-legend-color {
+            width: 20px;
+            height: 20px;
+            margin-right: 10px;
+            border-radius: 3px;
+        }
+        
+        .tooltip {
+            position: absolute;
+            background: rgba(30, 30, 46, 0.95);
+            border: 1px solid rgba(76, 201, 240, 0.5);
+            border-radius: 5px;
+            padding: 10px;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.3s;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+            z-index: 10;
+        }
+        
+        /* 响应式调整 */
+        @media (max-width: 1200px) {
+            .education-dashboard {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        @media (max-width: 900px) {
+            .education-chart-wrapper {
+                height: 280px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .highlight {
+                font-size: 3.8rem;
+            }
+            .normal-text {
+                font-size: 2.4rem;
+            }
+            .subtitle {
+                font-size: 1.2rem;
+            }
+            .content-container {
+                padding: 20px;
+                margin: 30px 20px;
+                margin-top: 15vh;
+                max-width: calc(100% - 40px);
+            }
+            .quote {
+                font-size: 1.5rem;
+            }
+            .title-container {
+                margin-top: 25vh;
+                margin-bottom: 25vh;
+            }
+            #map-container, .single-chart-container {
+                height: 350px;
+            }
+            .pyramid-title {
+                font-size: 2rem;
+            }
+        }
+        
+        @media (max-width: 600px) {
+            .education-chart-container {
+                padding: 15px;
+            }
+            .education-chart-title {
+                font-size: 1.3rem;
+            }
+            .education-chart-wrapper {
+                height: 250px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .highlight {
+                font-size: 3.0rem;
+            }
+            .normal-text {
+                font-size: 2.0rem;
+            }
+            .subtitle {
+                font-size: 1rem;
+            }
+            .title-container {
+                gap: 5px;
+                margin-top: 20vh;
+                margin-bottom: 20vh;
+            }
+            .section-title {
+                font-size: 1.5rem;
+            }
+            .quote {
+                font-size: 1.3rem;
+            }
+            .content-container {
+                margin-top: 10vh;
+            }
+            #map-container, .single-chart-container {
+                height: 300px;
+            }
+            .pyramid-legend {
+                gap: 15px;
+            }
+        }
+        
+        /* 平滑滚动效果 */
+        html {
+            scroll-behavior: smooth;
+        }
+        
+        /* 滚动进度条 */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 220, 80, 0.5);
+            border-radius: 4px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 220, 80, 0.8);
+        }
+
+        /* 社交互动区域样式 */
+        :root {
+            --primary-color: #4a6fa5;
+            --secondary-color: #6b8cbc;
+            --accent-color: #ff7e5f;
+            --support-color: #6bbf8c;
+            --share-color: #f7b928;
+            --like-color: #e74c3c;
+            --bg-color: #121212;
+            --card-bg: #1e1e1e;
+            --text-color: #e0e0e0;
+            --light-text: #b0b0b0;
+            --border-color: #333333;
+        }
+        
+        .social-section {
+            position: relative;
+            z-index: 2;
+            max-width: 750px;
+            width: 100%;
+            margin: 0 auto 100px;
+            padding: 0 20px;
+        }
+        
+        .social-container {
+            max-width: 800px;
+            width: 100%;
+            background: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            padding: 30px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .social-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary-color) 0%, var(--accent-color) 100%);
+        }
+        
+        .post-content {
+            margin-bottom: 25px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--border-color);
+            text-align: center;
+        }
+        
+        .topic-tag {
+            display: inline-block;
+            background-color: rgba(74, 111, 165, 0.2);
+            color: var(--primary-color);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+        
+        .post-content h2 {
+            margin-top: 0;
+            color: var(--text-color);
+            font-size: 1.6rem;
+            line-height: 1.4;
+            margin-bottom: 20px;
+        }
+        
+        .post-content p {
+            color: var(--light-text);
+            line-height: 1.7;
+            font-size: 1.05rem;
+            margin-bottom: 10px;
+        }
+        
+        .social-interactions {
+            display: flex;
+            justify-content: space-around;
+            padding: 10px 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .interaction-btn {
+            display: flex;
+            align-items: center;
+            background: none;
+            border: none;
+            padding: 10px 18px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.95rem;
+            color: var(--light-text);
+            position: relative;
+            font-weight: 500;
+        }
+        
+        .interaction-btn:hover {
+            background-color: rgba(255, 255, 255, 0.05);
+            transform: translateY(-2px);
+        }
+        
+        .interaction-btn.active {
+            color: var(--primary-color);
+            background-color: rgba(74, 111, 165, 0.2);
+        }
+        
+        .interaction-btn.support.active {
+            color: var(--support-color);
+            background-color: rgba(107, 191, 140, 0.2);
+        }
+        
+        .interaction-btn.share.active {
+            color: var(--share-color);
+            background-color: rgba(247, 185, 40, 0.2);
+        }
+        
+        .interaction-btn.like.active {
+            color: var(--like-color);
+            background-color: rgba(231, 76, 60, 0.2);
+        }
+        
+        .icon {
+            margin-right: 8px;
+            font-size: 1.3rem;
+            transition: transform 0.3s ease;
+        }
+        
+        .support-btn .icon {
+            color: inherit;
+        }
+        
+        .like-btn .icon {
+            color: inherit;
+        }
+        
+        .support-btn.active .icon {
+            animation: supportAnimation 0.6s ease;
+        }
+        
+        .like-btn.active .icon {
+            animation: likeAnimation 0.8s ease;
+        }
+        
+        @keyframes supportAnimation {
+            0% { transform: scale(1); }
+            25% { transform: scale(1.2); }
+            50% { transform: scale(0.9); }
+            75% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+        
+        @keyframes likeAnimation {
+            0% { transform: scale(1) rotate(0deg); }
+            25% { transform: scale(1.3) rotate(-10deg); }
+            50% { transform: scale(1.1) rotate(10deg); }
+            75% { transform: scale(1.2) rotate(-5deg); }
+            100% { transform: scale(1) rotate(0deg); }
+        }
+        
+        .count {
+            font-weight: 600;
+            margin-left: 5px;
+            background-color: rgba(255, 255, 255, 0.1);
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 0.85rem;
+        }
+        
+        .comment-section {
+            margin-top: 25px;
+            padding-top: 20px;
+            display: none;
+        }
+        
+        .comment-section.active {
+            display: block;
+            animation: fadeIn 0.4s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .comment-input {
+            display: flex;
+            margin-bottom: 20px;
+            background-color: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 5px;
+        }
+        
+        .comment-input input {
+            flex: 1;
+            padding: 12px 15px;
+            border: none;
+            background: transparent;
+            font-size: 1rem;
+            outline: none;
+            border-radius: 8px;
+            color: var(--text-color);
+        }
+        
+        .comment-input input:focus {
+            background-color: rgba(255, 255, 255, 0.1);
+            box-shadow: 0 0 0 2px var(--primary-color);
+        }
+        
+        .comment-input button {
+            padding: 0 25px;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background-color 0.3s;
+            white-space: nowrap;
+        }
+        
+        .comment-input button:hover {
+            background-color: var(--secondary-color);
+        }
+        
+        .comments-list {
+            max-height: 300px;
+            overflow-y: auto;
+            padding-right: 10px;
+        }
+        
+        .comment {
+            background-color: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 15px;
+            animation: fadeIn 0.3s ease;
+            border-left: 3px solid var(--primary-color);
+        }
+        
+        .comment-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .comment-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--accent-color) 100%);
+            margin-right: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: white;
+        }
+        
+        .comment-author {
+            font-weight: 600;
+            color: var(--text-color);
+        }
+        
+        .comment-time {
+            font-size: 0.8rem;
+            color: var(--light-text);
+            margin-left: auto;
+        }
+        
+        .comment-text {
+            color: var(--text-color);
+            line-height: 1.5;
+        }
+        
+        .share-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .share-modal.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .share-content {
+            background: var(--card-bg);
+            border-radius: 12px;
+            width: 90%;
+            max-width: 450px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+            transform: translateY(20px);
+            transition: transform 0.3s ease;
+        }
+        
+        .share-modal.active .share-content {
+            transform: translateY(0);
+        }
+        
+        .share-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .share-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin: 0;
+            color: var(--text-color);
+        }
+        
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--light-text);
+        }
+        
+        .share-options {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+        
+        .share-option {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            cursor: pointer;
+            padding: 15px 10px;
+            border-radius: 8px;
+            transition: all 0.2s;
+            border: 1px solid var(--border-color);
+            background-color: rgba(255, 255, 255, 0.05);
+        }
+        
+        .share-option:hover {
+            background-color: rgba(74, 111, 165, 0.2);
+            border-color: var(--primary-color);
+        }
+        
+        .share-icon {
+            font-size: 2rem;
+            margin-bottom: 8px;
+        }
+        
+        .share-name {
+            font-size: 0.9rem;
+            color: var(--text-color);
+        }
+        
+        .share-url {
+            display: flex;
+            margin-bottom: 20px;
+        }
+        
+        .share-url input {
+            flex: 1;
+            padding: 10px 15px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px 0 0 6px;
+            font-size: 0.9rem;
+            background-color: rgba(255, 255, 255, 0.05);
+            color: var(--text-color);
+        }
+        
+        .share-url button {
+            padding: 10px 15px;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 0 6px 6px 0;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        
+        .share-url button:hover {
+            background-color: var(--secondary-color);
+        }
+        
+        .share-action {
+            display: flex;
+            justify-content: flex-end;
+        }
+        
+        .share-action button {
+            padding: 10px 20px;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        
+        .share-action button:hover {
+            background-color: var(--secondary-color);
+        }
+        
+        @media (max-width: 600px) {
+            .social-container {
+                padding: 20px;
+            }
+            
+            .interaction-btn {
+                padding: 8px 12px;
+                font-size: 0.85rem;
+            }
+            
+            .share-options {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .comment-input {
+                flex-direction: column;
+            }
+            
+            .comment-input button {
+                margin-top: 10px;
+                padding: 12px;
+            }
+        }
+
+        /* 金字塔图表样式 - 低饱和暗色系设计 */
+        .pyramid-chart-container {
+            position: relative;
+            width: 100%;
+            height: 400px;
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+            margin: 30px 0;
+        }
+
+        .pyramid-layer {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            border-radius: 5px;
+            transition: all 0.4s ease;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #fff;
+            cursor: pointer;
+            padding: 0 20px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        /* 三层金字塔样式 */
+        .layer-1 { /* 顶层-生存需求型：低饱和暗粉 */
+            width: 200px;
+            height: 80px;
+            top: 40px;
+            background: linear-gradient(to bottom, #8d6e63, #6d4c41);
+            box-shadow: 0 4px 10px rgba(109, 76, 65, 0.15);
+        }
+
+        .layer-2 { /* 中层-事业成就型：低饱和暗紫 */
+            width: 300px;
+            height: 100px;
+            top: 140px;
+            background: linear-gradient(to bottom, #7b1fa2, #554a77);
+            box-shadow: 0 4px 10px rgba(85, 74, 119, 0.15);
+        }
+
+        .layer-3 { /* 底层-亲社会型：低饱和暗蓝 */
+            width: 380px;
+            height: 80px;
+            top: 260px;
+            background: linear-gradient(to bottom, #3a506b, #2d3e50);
+            box-shadow: 0 4px 10px rgba(58, 80, 107, 0.15);
+        }
+
+        .layer-score {
+            font-size: 1.2rem;
+            font-weight: 700;
+            margin-right: 12px;
+        }
+
+        .layer-label {
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        /* 悬浮效果（低饱和阴影，不刺眼） */
+        .pyramid-layer:hover {
+            transform: translateX(-50%) scale(1.05);
+            box-shadow: 0 6px 15px rgba(255, 255, 255, 0.08);
+        }
+
+        /* 信息面板：匹配分层低饱和色 */
+        .info-panel {
+            width: 280px;
+            padding: 1rem;
+            background-color: #1e1e1e;
+            border-radius: 8px;
+            border-left: 3px solid transparent;
+            display: none;
+            transition: all 0.3s ease;
+            position: absolute;
+        }
+
+        .info-left { /* 左侧面板：暗粉边框 */
+            border-left-color: #6d4c41;
+            left: -200px; /* 显示在金字塔左侧，更靠近主体 */
+            top: 40px;
+        }
+
+        .info-middle { /* 中间面板：暗紫边框 */
+            border-left-color: #554a77;
+            left: -200px; /* 显示在金字塔左侧中间位置，更靠近主体 */
+            top: 140px;
+        }
+
+        .info-right { /* 右侧面板：暗蓝边框 */
+            border-left-color: #3a506b;
+            right: -200px; /* 显示在金字塔右侧，更靠近主体 */
+            top: 260px;
+        }
+
+        .info-title {
+            color: #fff;
+            margin-bottom: 0.5rem;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+        }
+
+        .info-title span {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 6px;
+            display: inline-block;
+        }
+
+        .info-content {
+            line-height: 1.5;
+            font-size: 0.85rem;
+            color: #d0d0d0;
+        }
+        
+        /* 响应式调整：在小屏幕上信息面板显示在下方 */
+        @media (max-width: 1024px) {
+            .info-left, .info-middle, .info-right {
+                position: static;
+                margin: 10px auto;
+                width: 100%;
+                max-width: 400px;
+            }
+            
+            .main-container {
+                flex-direction: column;
+                align-items: center;
+            }
+        }
+
+        /* 轮播幻灯片样式 */
+        .carousel-section {
+            margin: 60px 0;
+            position: relative;
+            z-index: 2;
+        }
+        
+        .carousel-container {
+            max-width: 800px;
+            width: 100%;
+            margin: 0 auto;
+            text-align: center;
+            color: #f0f0f0;
+        }
+        
+        .slider-container {            
+            position: relative;            
+            width: 100%;            
+            height: auto; /* 高度自适应 */            
+            border-radius: 15px;            
+            overflow: hidden;            
+            background: transparent; /* 移除黑色背景 */            
+            margin: 0 auto;            
+            padding: 40px; /* 添加内边距 */        
+        }
+        
+          .slide {
+            position: relative; /* 改为相对定位 */
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            padding: 20px;
+            opacity: 1; /* 所有幻灯片都可见 */
+            z-index: 3;
+            background: transparent; /* 移除背景 */
+            border: none; /* 移除边框 */
+            box-shadow: none; /* 移除阴影 */
+        }
+        
+        .slide-content {
+            text-align: center;
+            color: #fff;
+            z-index: 2;
+            opacity: 1; /* 内容始终可见 */
+            transform: none; /* 移除动画效果 */
+            padding: 20px;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.05); 
+            backdrop-filter: blur(5px);
+            max-width: 90%;
+            margin: 0 auto;
+        }
+        
+        .slide-title {
+            font-size: 3.2rem;
+            margin-bottom: 15px;
+            color: rgba(255, 220, 80, 0.9); /* 使用金色 */
+            font-weight: 600;
+            letter-spacing: 1px;
+            text-transform: uppercase; /* 大写字母 */
+            font-family: 'Noto Serif SC', serif;
+            position: relative;
+            display: inline-block;
+            padding-bottom: 10px;
+        }
+        
+        .slide-title::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80px;
+            height: 3px;
+            background: rgba(255, 220, 80, 0.7);
+            border-radius: 2px;
+        }
+        
+        .title-slide h2 {
+            font-size: 3.8rem;
+            margin-bottom: 20px;
+            color: rgba(255, 220, 80, 0.9); /* 使用金色 */
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-shadow: 0 0 10px rgba(255, 220, 80, 0.3);
+            font-family: 'Noto Serif SC', serif;
+            position: relative;
+            padding-bottom: 15px;
+        }
+        
+        .title-slide h2::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 120px;
+            height: 4px;
+            background: rgba(255, 220, 80, 0.7);
+            border-radius: 2px;
+        }
+        
+        /* 移除不需要的元素 */
+        .progress-indicator, .navigation, .instructions, .swipe-hint {
+            display: none !important;
+        }
+        
+        @keyframes pulse {
+            0% { text-shadow: 0 0 15px rgba(255, 220, 80, 0.7); }
+            50% { text-shadow: 0 0 25px rgba(255, 220, 80, 0.9); }
+            100% { text-shadow: 0 0 15px rgba(255, 220, 80, 0.7); }
+        }
+        
+        @media (max-width: 768px) {
+            .slide-title {
+                font-size: 2.5rem;
+            }
+            
+            .title-slide h2 {
+                font-size: 3.0rem;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .slide-title {
+                font-size: 2.0rem;
+            }
+            
+            .title-slide h2 {
+                font-size: 2.4rem;
+            }
+        }
+    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;700&amp;display=swap" rel="stylesheet">
+</head>
+<body>
+    <canvas id="starCanvas"></canvas>
+    
+    <div class="title-container">
+        <span class="highlight">手机</span>
+        <span class="normal-text">是她们的新农具，</span>
+        <span class="highlight">屏幕</span>
+        <span class="normal-text">却是看不见的</span>
+        <span class="highlight">墙</span>
+        <!-- 新增副标题 -->
+        <div class="subtitle">—— 一份关于农村女性数字就业机遇与现实困境的报告</div>
+    </div>
+
+    <div class="content-container">
+        <div class="quote">
+            "你闭上眼睛什么都看不见，但是你睁开眼睛就能看见前面的东西。人，要往前走。"
+        </div>
+        
+        <div class="paragraph">
+            小英，29岁，初中文化，是两个孩子的母亲。2019年接触快手，2021年在抖音注册"小英一家"账号，记录日常生活如带娃、干农活、放牛等。条件艰苦却一直坚持。 
+        </div>
+        
+        <div class="paragraph">
+            或许她并不是什么励志大女主，但她绝对是一名优秀的女性，她现在所拥有的一切都配得上她的努力。小英真的印证了那句："苔花如米小，也学牡丹开。"
+        </div>
+        
+        <div class="paragraph">
+            她的故事，像一束光，照进了许多农村妇女的生活——仿佛一根网线、一部手机，就能撬动命运的另一扇门。既能照顾家庭，又能实现经济独立，甚至获得前所未有的自我价值感。这根网线，似乎轻轻一牵，就能将深山与世界相连。
+        </div>
+        
+        <!-- 替换原标题为轮播幻灯片 -->
+        <div class="carousel-section">
+            <div class="carousel-container">
+                <div class="slider-container" id="sliderContainer">
+                   
+                        <div class="progress-indicator">
+                            <span class="progress-text">2/3</span>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: 67%;"></div>
+                            </div>
+                        </div>
+                    
+                    
+                    <div class="slide slide-3 title-slide" id="slide3">
+                        <div class="slide-content">
+                            <h2>低门槛，高围墙</h2>
+                            <p>数字经济真的是条好出路吗？</p>
+                        </div>
+                        <div class="progress-indicator">
+                            <span class="progress-text">3/3</span>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: 100%;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="navigation">
+                    <div class="nav-dot active" data-index="0"></div>
+                    <div class="nav-dot" data-index="1"></div>
+                    <div class="nav-dot" data-index="2"></div>
+                </div>
+                
+                <p class="instructions">滑动屏幕或使用键盘上下键切换</p>
+            </div>
+        </div>
+        
+        <div class="paragraph">
+            小英的成功不是孤例。近年来，像她这样借助数字电商走出贫困、实现经济独立的农村妇女正逐渐增多。她们在直播间里卖货、在短视频中展示乡村生活、在微信群里接单手工……数字经济似乎为她们提供了一条“低门槛、高灵活”的新出路：既能照顾家庭，又能实现经济独立，甚至获得前所未有的自我价值感。
+        </div>
+           
+        
+        <div class="paragraph">
+            但这条路上，远不如屏幕前那般光鲜。
+        </div>
+        
+        <div class="paragraph">
+            小英也坦言："一开始根本不会剪辑视频，也不知道怎么上架商品，还是自己花68元报了一个微信自学班，在手机上一步步自己摸索拍摄和剪辑视频。"她笑着说。
+        </div>
+            <center>
+            <div class="image-container">
+                <img src="images/kecheng2.png" height="540" width="686" >
+            </div>
+            </center>
+        
+        <div class="paragraph">
+            像小英这样能"熬出来"的人，毕竟是少数。
+        </div>
+        
+        <div class="stats">
+            1."留守"背后的经济困境<br>
+            《全国农村留守妇女状况研究报告》显示，全国农村留守妇女规模约3500万，其中超半数家庭主要收入依赖丈夫外出务工。72% 的农村女性创业者直言"创业初衷是补贴家用"，仅有18% 将"实现自我价值"作为首要目标。
+        </div>
+        
+        <!-- 乡村女性创业动机金字塔图表 -->
+        <div id="pyramidChartContainer">
+            <div class="pyramid-header">
+                <h2 class="pyramid-title">乡村女性创业动机分析</h2>
+                <div class="pyramid-subtitle">基于《"她"力量新时代女性乡村旅游创业就业研究(2025)》数据</div>
+            </div>
+            
+            <div class="pyramid-description">
+                <p>本金字塔图表展示了乡村女性创业的主要动机类型及其相对重要性。数据显示，生存需求是乡村女性创业的最主要动机，其次是事业成就动机，亲社会动机排名第三。</p>
+            </div>
+            
+            <div class="pyramid-controls">
+                <button id="viewScore" class="active">按分数查看</button>
+                <button id="viewPercentage">按百分比查看</button>
+                <button id="animate">动画效果</button>
+            </div>
+            
+            <div class="main-container" style="display: flex; justify-content: center; align-items: center; position: relative;">
+                <!-- 左侧信息面板 -->
+                <div class="info-panel info-left" id="info-1">
+                    <h3 class="info-title"><span style="background-color: #6d4c41;"></span>生存需求型（4.85）</h3>
+                    <p class="info-content">核心动机为经济保障、避免失业，如经营家庭农家乐、手工编织副业，兼顾家庭与收入。这类创业者通常年龄在40-55岁之间，文化程度相对较低，创业规模较小，主要为了补贴家用和增加家庭收入稳定性。</p>
+                </div>
+
+                <!-- 中间：图表 -->
+                <div class="pyramid-chart-container">
+                    <div class="pyramid-layer layer-1" data-target="info-1">
+                        <div class="layer-score">4.85</div>
+                        <div class="layer-label">生存需求型</div>
+                    </div>
+                    <div class="pyramid-layer layer-2" data-target="info-2">
+                        <div class="layer-score">5.23</div>
+                        <div class="layer-label">事业成就型</div>
+                    </div>
+                    <div class="pyramid-layer layer-3" data-target="info-3">
+                        <div class="layer-score">5.42</div>
+                        <div class="layer-label">亲社会型</div>
+                    </div>
+                </div>
+
+                <!-- 右侧信息面板 -->
+                <div class="info-panel info-middle" id="info-2">
+                    <h3 class="info-title"><span style="background-color: #554a77;"></span>事业成就型（5.23）</h3>
+                    <p class="info-content">追求个人价值与影响力，如打造"田园女主人"品牌，通过电商带动团队创业。这类女性创业者年龄多在25-45岁之间，具有一定文化基础，更善于利用数字工具拓展业务，创业目标是实现个人价值和职业发展。</p>
+                </div>
+                
+                <div class="info-panel info-right" id="info-3">
+                    <h3 class="info-title"><span style="background-color: #3a506b;"></span>亲社会型（5.42）</h3>
+                    <p class="info-content">以帮助他人、发展乡村为核心，如成立妇女合作社，培训留守妇女非遗技艺。这类创业者往往具有较强的社会责任感，注重带动当地妇女共同发展，通过集体力量提升农村女性的经济地位和社会影响力。</p>
+                </div>
+            </div>
+            
+            <div class="pyramid-legend">
+                <div class="pyramid-legend-item">
+                    <div class="pyramid-legend-color" style="background-color: #6d4c41;"></div>
+                    <span>生存需求型 (4.85)</span>
+                </div>
+                <div class="pyramid-legend-item">
+                    <div class="pyramid-legend-color" style="background-color: #554a77;"></div>
+                    <span>事业成就型 (5.23)</span>
+                </div>
+                <div class="pyramid-legend-item">
+                    <div class="pyramid-legend-color" style="background-color: #3a506b;"></div>
+                    <span>亲社会型 (5.42)</span>
+                </div>
+            </div>
+            
+            <div class="data-source">
+                数据来源：《"她"力量新时代女性乡村旅游创业就业研究(2025)》 中国旅游新闻客户端
+            </div>
+        </div>
+             
+        <div class="stats">
+            2. 数字经济的“低门槛”诱惑<br>
+            电商、直播等行业看似“一部手机就能创业”，但实际面临流量竞争、供应链缺失等隐形门槛。安徽阜阳的“宝妈直播团”中，90% 的成员最初因“时间灵活、能照顾孩子”加入，但其中仅30% 能实现稳定收入。
+        </div>
+        
+        <div class="paragraph">
+            在数字经济的“低门槛”背后，隐藏着真实的鸿沟。这跟网线连接的，不仅是机遇，更是根深蒂固的现实差距。
+        </div>
+        
+        <!-- 女性农民工占比变化图表 -->
+        <div class="chart-wrapper">
+            <div class="single-chart-container">
+                <canvas id="femaleMigrationChartDark"></canvas>
+            </div>
+            <p class="data-source">数据来源：中华人民共和国国家统计局 《2014～2024年农民工监测调查报告》</p>
+        </div>
+        
+
+        <div class="carousel-section">
+    <div class="carousel-container">
+        <div class="slider-container" id="secondSliderContainer">
+            
+            <div class="slide slide-4 title-slide" id="secondSlide4">
+                <div class="slide-content">
+                    <h2>微光与鸿沟</h2>
+                    <p>数字浪潮中，农村女性创业者被困在教育孤岛、资源壁垒与流量牢笼中</p>
+                    
+                </div>
+                <div class="progress-indicator">
+                    <span class="progress-text">4/4</span>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 100%;"></div>
+                    </div>
+                </div>
+               
+            </div>
+        </div>
+
+        <div class="navigation">
+            <div class="nav-dot active" data-index="0" title="教育挑战"></div>
+            <div class="nav-dot" data-index="1" title="资源限制"></div>
+            <div class="nav-dot" data-index="2" title="规则壁垒"></div>
+            <div class="nav-dot" data-index="3" title="总结"></div>
+        </div>
+
+        <div class="instructions mt-4">
+            <p>可通过 <i class="fa fa-arrow-up"></i> <i class="fa fa-arrow-down"></i> 方向键、鼠标滚轮或点击导航点切换</p>
+        </div>
+    </div>
+</div>
+
+
+        <div class="paragraph">
+            小英的成功，像一盏希望的灯。但灯光越亮，照出的阴影也越深。对于大多数农村妇女而言，那条看似触手可及的“网线”，实则需要跨越深不见底的天堑。
+        </div>
+        
+        <div class="paragraph">
+            “想学，却不知路在何方”
+        </div>
+        
+        <div class="paragraph">
+            梦想始于学习，但教育的差距是第一道坎。农村女性劳动力平均受教育年限仅7.3年，超过60% 的人最高学历止步于初中。当数字机遇来临时，她们中接受过系统培训的不足20%。
+        </div>
+        
+        <div class="paragraph">
+            更关键的是，许多培训与真实的战场脱节：教开网店，却不教如何管理供应链；教拍视频，却不讲透算法的逻辑；教直播话术，却无法模拟应对恶意评论的慌乱。她们知道“要学”，但“学什么、怎么学、学了有没有用”，是比技能本身更真实的迷茫。
+        </div>
+        
+        <!-- 农村女性教育数据图表组 -->
+        <div class="education-dashboard">
+            <!-- 女性教育与培训综合数据 -->
+            <div class="education-chart-container">
+                <h2 class="education-chart-title"><i class="fas fa-chart-bar"></i> 女性教育与培训综合数据</h2>
+                <div class="education-chart-wrapper">
+                    <canvas id="comprehensiveChart"></canvas>
+                </div>
+            </div>
+            
+            <!-- 性别文盲率对比 -->
+            <div class="education-chart-container">
+                <h2 class="education-chart-title"><i class="fas fa-venus-mars"></i> 性别文盲率对比</h2>
+                <div class="education-chart-wrapper">
+                    <canvas id="genderChart"></canvas>
+                </div>
+            </div>
+        </div>
+        
+        <div class="data-source">
+            <p>数据来源：妇女报、2020年人口普查 | 包含农村女性教育年限、职业教育及培训参与情况、文盲率统计</p>
+        </div>
+        
+        <div class="paragraph">
+            资源的孤岛："一个人，打不赢一场战争"
+        </div>
+        
+        <div class="paragraph">
+            即便个人足够努力，像小英一样咬牙坚持，外部资源的匮乏却可能让一切事倍功半。
+        </div>
+        
+        <div class="paragraph">
+            即便一位45岁的大姐可能付出双倍心血，仍难以理解“流量池”和“用户画像”。即便是最优秀的农村女主播，也常因物流不畅导致农产品变质，或因缺乏稳定货源而中断经营。在注意力经济中，没有团队支持和资源倾斜的个体，极易被淹没。
+        </div>
+            <center>
+            <div class="image-container">
+            <!-- 使用相对路径插入图片-->
+            <img src="images/gudao.png" height="540" width="900" >
+            </div>
+            </center>
+     
+      
+        <div class="paragraph">
+        
+        <div class="paragraph">
+            规则的暗流与生活的重压：“自由职业，并不自由”
+        </div>
+        
+        <div class="paragraph">
+            而当她们鼓起勇气踏上这条路，还要面对现实的残酷抉择。
+        </div>
+        
+        <div class="paragraph">
+            福建的张小英道出了这种矛盾：“在电子厂打工，身体累，但心是定的。回家做直播，人自由了，可天天为那点流量揪着心，睡不着。”
+        </div>
+        
+        <div class="paragraph">
+            媒体的聚光灯追逐着“年入百万”的奇迹，但更多人的日常是：个位数的观众、因违规被限流却申诉无门的账号，以及补贴家用这一最现实的创业初衷。
+        </div>
+        
+       <div class="carousel-section">
+    <div class="carousel-container">
+        <div class="slider-container" id="thirdSliderContainer">
+            
+            </div>
+
+            <div class="slide slide-3 title-slide" id="thirdSlide3">
+                <div class="slide-content">
+                    <h2>幸存者偏差</h2>
+                    <p>5%的顶尖幸存者与80%的沉默者</p>
+                </div>
+                <div class="progress-indicator">
+                    <span class="progress-text">3/3</span>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 100%;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="navigation">
+            <div class="nav-dot active" data-index="0"></div>
+            <div class="nav-dot" data-index="1"></div>
+            <div class="nav-dot" data-index="2"></div>
+        </div>
+
+       
+</div>
+
+
+        
+        <div class="paragraph">
+            当镜头从“小英们”身上移开，数字经济的浪潮在农村女性群体中塑造了一种残酷的新分化。这条看似平坦的“云上”之路，远非对所有人平等开放。
+        </div>
+        
+        <div class="paragraph">
+            顶部的“幸存者”与底部的“沉默者”，构成了鲜明的两极。
+        </div>
+            <div class="image-container">
+                <!-- 使用相对路径插入图片 -->
+                <img src="images/tianping.png" height="646" width="1279">
+            </div>
+        
+        <div class="paragraph">
+            约5% 的农村女性数字创业者能突破重围，成为年收入过10万元的案例。她们通常年轻、受教育程度较高，且背后常有团队支持。而近 80% 的尝试者，则快速沦为“数字分母”，其项目在一年内终止。在这两极之间，是约 15% 的“挣扎者”——她们能获得每月2000-5000元却不稳定的收入，如同在安徽尝试直播的“宝妈团”，仅30%能实现稳定收入。
+        </div>
+        
+        <div class="paragraph">
+            这种分化，在地域上被进一步放大。
+        </div>
+        
+        <div class="paragraph">
+            在浙江、江苏等电商生态成熟的地区，农村女性电商成功率可达25%；而到了中西部省份，这一数字骤降至 8% 以下。基础设施与资源的差距，在数字时代演变为成功率的天堑。
+        </div>
+        
+        <!-- 国家骨干冷链物流基地分布地图 -->
+        <div class="chart-wrapper">
+            <div id="map-container"></div>
+            <p class="data-source">数据来源：国家发展改革委 商务部 关于做好2023年国家骨干冷链物流基地建设工作的通知</p>
+        </div>
+        
+        <div class="paragraph">
+            福建龙岩的张小英（化名）的经历是这种分化的缩影。她在电子厂打工十年，收入稳定却无法顾家；返乡做直播后，虽获自由，却日日陷入“流量焦虑”之中。她的两难境地揭示了一个现实：对于大多数农村女性而言，数字经济提供的并非一条轻松的出路，而是一场高风险的赌博。
+        </div>
+        
+       <div class="carousel-section">
+    <div class="carousel-container">
+        <div class="slider-container" id="fourthSliderContainer">
+           
+            <div class="slide slide-3 title-slide" id="fourthSlide3">
+                <div class="slide-content">
+                    <h2>桥见新生</h2>
+                    <p>连接“网线”另一端，让农村女性不被数字浪潮抛下</p>
+                </div>
+                <div class="progress-indicator">
+                    <span class="progress-text">3/3</span>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 100%;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="navigation">
+            <div class="nav-dot active" data-index="0"></div>
+            <div class="nav-dot" data-index="1"></div>
+            <div class="nav-dot" data-index="2"></div>
+        </div>
+
+       
+</div>
+
+
+            数字经济的浪潮不会因任何人的落后而放缓脚步，但文明的尺度恰恰体现在如何对待那些“跟不上”的人。当我们赞叹“云端”的绚丽时，一个更值得思考的问题是：那条“网线”的另一端，除了流量和交易，还能连接什么？
+        </div>
+        
+        
+        <div class="paragraph">
+        
+        <div class="paragraph">
+            小英的成功秘诀之一，是她花了68元学到的剪辑技能。而这，恰恰点破了问题的核心：连接世界之前，先要连接资源与能力。 如今，一些更深层次的“连接”正在发生：
+        </div>
+        
+        <div class="paragraph">
+            在浙江的一些乡村，培训不再是“教拍视频”，而是组建“妇女电商合作社”；在快手，巨量星图已开始推出针对农妇的扶持项目，尝试用更透明的规则和更公平的流量分配，让“张小英们”不再那么焦虑。
+        </div>
+        
+        <div class="paragraph">而我们每一个观看、点赞、转发的人，也成为了一种连接——用关注连接起一份小小的支持，用购买连接起一份实实在在的生计。</div>
+        
+        <div class="paragraph">
+            小英还在直播。
+        </div>
+        
+        <div class="paragraph">
+            她身后那扇窗，既照见了她的生活，也映出了成千上万农村妇女在时代变革中的挣扎与希望、困境与突破。数字经济的天空足够广阔，但它的价值不在于塑造少数“超级个体”，而在于能否让每一份努力都摸到那条向上的藤蔓。
+        </div>
+        
+        <div class="quote">
+            "你闭上眼睛什么都看不见，但是你睁开眼睛就能看见前面的东西。人，要往前走。"
+        </div>
+    </div>
+
+    <!-- 社交互动区域 -->
+    <div class="social-section">
+        <div class="social-container">
+            <div class="post-content">
+                <span class="topic-tag">数据新闻 · 农村女性 · 数字连接</span>
+                <h2>这份数据新闻带给你怎样的思考？</h2>
+                <p>参与互动，让更多人看见屏幕后的她们。</p>
+            </div>
+
+            <div class="social-interactions">
+                <button class="interaction-btn like-btn" id="likeBtn">
+                    <span class="icon">👍</span>
+                    <span>点赞</span>
+                    <span class="count" id="likeCount">256</span>
+                </button>
+
+                <button class="interaction-btn support-btn" id="supportBtn">
+                    <span class="icon">❤️</span>
+                    <span>支持</span>
+                    <span class="count" id="supportCount">428</span>
+                </button>
+
+                <button class="interaction-btn comment-btn" id="commentBtn">
+                    <span class="icon">💬</span>
+                    <span>评论</span>
+                    <span class="count" id="commentCount">63</span>
+                </button>
+
+                <button class="interaction-btn share-btn" id="shareBtn">
+                    <span class="icon">📤</span>
+                    <span>分享希望</span>
+                    <span class="count" id="shareCount">89</span>
+                </button>
+            </div>
+
+            <div class="comment-section" id="commentSection">
+                <div class="comment-input">
+                    <input type="text" id="commentInput" placeholder="分享您对农村女性数字就业的看法...">
+                    <button id="submitComment">发表评论</button>
+                </div>
+
+                <div class="comments-list" id="commentsList">
+                    <!-- 评论将通过JS动态添加 -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="share-modal" id="shareModal">
+        <div class="share-content">
+            <div class="share-header">
+                <h3 class="share-title">分享这份希望</h3>
+                <button class="close-btn" id="closeShareModal">×</button>
+            </div>
+
+            <div class="share-options">
+                <div class="share-option">
+                    <span class="share-icon">💬</span>
+                    <span class="share-name">微信</span>
+                </div>
+                <div class="share-option">
+                    <span class="share-icon">📱</span>
+                    <span class="share-name">微博</span>
+                </div>
+                <div class="share-option">
+                    <span class="share-icon">👩</span>
+                    <span class="share-name">女性社区</span>
+                </div>
+                <div class="share-option">
+                    <span class="share-icon">📧</span>
+                    <span class="share-name">邮件</span>
+                </div>
+                <div class="share-option">
+                    <span class="share-icon">🔗</span>
+                    <span class="share-name">复制链接</span>
+                </div>
+                <div class="share-option">
+                    <span class="share-icon">💻</span>
+                    <span class="share-name">其他平台</span>
+                </div>
+            </div>
+
+            <div class="share-url">
+                <input type="text" value="https://example.com/digital-economy-the-other-end" readonly>
+                <button id="copyUrl">复制</button>
+            </div>
+
+            <div class="share-action">
+                <button id="shareNow">分享希望</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // --------------------------
+            // 1. 星空动画初始化
+            // --------------------------
+            const canvas = document.getElementById('starCanvas');
+            const starCtx = canvas.getContext('2d');
+            
+            function resizeCanvas() {
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+            }
+            resizeCanvas();
+            window.addEventListener('resize', resizeCanvas);
+            
+            class Star {
+                constructor() {
+                    this.reset();
+                }
+                
+                reset() {
+                    this.x = Math.random() * canvas.width;
+                    this.y = Math.random() * canvas.height;
+                    this.isBright = Math.random() < 0.03;
+                    this.size = this.isBright ? Math.random() * 3 + 2 : Math.random() * 2 + 0.5;
+                    this.baseSize = this.size;
+                    this.baseColor = this.isBright ? `rgba(255, 220, 80, 1)` : `rgba(150, 150, 150, 0.7)`;
+                    this.color = this.baseColor;
+                    this.pulseSpeed = Math.random() * 0.03 + 0.01;
+                    this.pulseValue = Math.random();
+                    this.pulseDirection = 1;
+                    this.angle = Math.random() * Math.PI * 2;
+                    this.spinSpeed = (Math.random() - 0.5) * 0.02;
+                    this.speed = Math.random() * 0.5 + 0.1;
+                    this.direction = Math.random() * Math.PI * 2;
+                }
+                
+                draw() {
+                    if (this.isBright) {
+                        const gradient = starCtx.createRadialGradient(
+                            this.x, this.y, 0, 
+                            this.x, this.y, this.size * 6
+                        );
+                        gradient.addColorStop(0, 'rgba(255, 220, 80, 0.4)');
+                        gradient.addColorStop(0.7, 'rgba(255, 220, 80, 0.1)');
+                        gradient.addColorStop(1, 'rgba(255, 220, 80, 0)');
+                        
+                        starCtx.beginPath();
+                        starCtx.arc(this.x, this.y, this.size * 6, 0, Math.PI * 2);
+                        starCtx.fillStyle = gradient;
+                        starCtx.fill();
+                        
+                        starCtx.save();
+                        starCtx.translate(this.x, this.y);
+                        starCtx.rotate(this.angle);
+                        starCtx.fillStyle = this.color;
+                        starCtx.beginPath();
+                        const radius = this.size * 2;
+                        for (let i = 0; i < 5; i++) {
+                            const outerX = Math.cos((Math.PI / 2) + (i * 2 * Math.PI / 5)) * radius;
+                            const outerY = Math.sin((Math.PI / 2) + (i * 2 * Math.PI / 5)) * radius;
+                            const innerX = Math.cos((Math.PI / 2) + (i * 2 * Math.PI / 5) + Math.PI / 5) * (radius * 0.4);
+                            const innerY = Math.sin((Math.PI / 2) + (i * 2 * Math.PI / 5) + Math.PI / 5) * (radius * 0.4);
+                            i === 0 ? starCtx.moveTo(outerX, outerY) : starCtx.lineTo(outerX, outerY);
+                            starCtx.lineTo(innerX, innerY);
+                        }
+                        starCtx.closePath();
+                        starCtx.fill();
+                        starCtx.restore();
+                    } else {
+                        starCtx.beginPath();
+                        starCtx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                        starCtx.fillStyle = this.color;
+                        starCtx.fill();
+                    }
+                }
+                
+                update() {
+                    this.pulseValue += this.pulseSpeed * this.pulseDirection;
+                    if (this.pulseValue >= 1 || this.pulseValue <= 0) this.pulseDirection *= -1;
+                    this.size = this.baseSize + (this.isBright ? this.pulseValue * 1.5 : this.pulseValue * 0.5);
+                    if (this.isBright) {
+                        this.color = `rgba(255, 220, 80, ${0.7 + this.pulseValue * 0.3})`;
+                        this.angle += this.spinSpeed;
+                    }
+                    
+                    this.x += Math.cos(this.direction) * this.speed;
+                    this.y += Math.sin(this.direction) * this.speed;
+                    if (this.x < -20 || this.x > canvas.width + 20 || this.y < -20 || this.y > canvas.height + 20) {
+                        this.reset();
+                    }
+                }
+            }
+            
+            const stars = Array.from({length: 1500}, () => new Star());
+            let lastTime = 0;
+            const fps = 60;
+            const interval = 1000 / fps;
+            
+            function animate(timestamp) {
+                requestAnimationFrame(animate);
+                const deltaTime = timestamp - lastTime;
+                if (deltaTime > interval) {
+                    lastTime = timestamp - (deltaTime % interval);
+                    starCtx.clearRect(0, 0, canvas.width, canvas.height);
+                    stars.forEach(star => {
+                        star.update();
+                        star.draw();
+                    });
+                }
+            }
+            animate();
+            
+            
+            
+            // --------------------------
+            // 3. 乡村女性创业动机金字塔图表交互
+            // --------------------------
+            const layers = document.querySelectorAll('.pyramid-layer');
+            const allPanels = document.querySelectorAll('.info-panel');
+            const mainContainer = document.querySelector('.main-container');
+            let currentPanel = null;
+            
+            // 鼠标进入金字塔图层显示对应信息面板
+            layers.forEach(layer => {
+                layer.addEventListener('mouseenter', () => {
+                    const targetId = layer.getAttribute('data-target');
+                    const targetPanel = document.getElementById(targetId);
+                    
+                    // 只在目标面板不同时才更新显示
+                    if (currentPanel !== targetPanel) {
+                        // 先隐藏所有面板
+                        allPanels.forEach(panel => panel.style.display = 'none');
+                        // 显示目标面板
+                        targetPanel.style.display = 'block';
+                        currentPanel = targetPanel;
+                    }
+                });
+            });
+            
+            // 鼠标离开整个容器才隐藏面板，避免在元素间移动时闪烁
+            mainContainer.addEventListener('mouseleave', () => {
+                allPanels.forEach(panel => panel.style.display = 'none');
+                currentPanel = null;
+            });
+            
+            // 按钮交互功能
+            document.getElementById('viewScore').addEventListener('click', function() {
+                document.querySelectorAll('.pyramid-controls button').forEach(btn => btn.classList.remove('active'));
+                this.classList.add('active');
+                
+                // 更新显示分数
+                document.querySelectorAll('.layer-score').forEach((el, i) => {
+                    const scores = [4.85, 5.23, 5.42];
+                    el.textContent = scores[i];
+                });
+            });
+            
+            document.getElementById('viewPercentage').addEventListener('click', function() {
+                document.querySelectorAll('.pyramid-controls button').forEach(btn => btn.classList.remove('active'));
+                this.classList.add('active');
+                
+                // 更新显示百分比
+                document.querySelectorAll('.layer-score').forEach((el, i) => {
+                    const percentages = ['32.2%', '34.9%', '32.9%'];
+                    el.textContent = percentages[i];
+                });
+            });
+            
+            document.getElementById('animate').addEventListener('click', function() {
+                // 金字塔动画效果
+                layers.forEach((layer, index) => {
+                    layer.style.transform = 'translateX(-50%) scale(0.8)';
+                    layer.style.opacity = '0.5';
+                    
+                    setTimeout(() => {
+                        layer.style.transform = 'translateX(-50%) scale(1)';
+                        layer.style.opacity = '1';
+                    }, 300 + index * 200);
+                });
+            });
+            
+            // --------------------------
+            // 4. 女性农民工占比图表
+            // --------------------------
+            const migrationCtx = document.getElementById('femaleMigrationChartDark').getContext('2d');
+            new Chart(migrationCtx, {
+                type: 'bar',
+                data: {
+                    labels: [2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024],
+                    datasets: [
+                        {
+                            label: '女性总占比（%）',
+                            data: [33.00, 33.60, 34.50, 34.40, 34.80, 35.10, 34.80, 35.90, 36.60, 37.30, 37.60],
+                            backgroundColor: 'rgba(94, 143, 255, 0.6)',
+                            borderColor: 'rgba(94, 143, 255, 1)',
+                            borderWidth: 1,
+                            yAxisID: 'y'
+                        },
+                        {
+                            label: '外出农民工女性占比（%）',
+                            data: [31.00, 31.20, 31.70, 31.30, 30.80, 30.70, 30.10, 30.20, 31.10, 30.50, 31.70],
+                            backgroundColor: 'rgba(140, 106, 255, 0.6)',
+                            borderColor: 'rgba(140, 106, 255, 1)',
+                            borderWidth: 1,
+                            yAxisID: 'y'
+                        },
+                        {
+                            label: '本地农民工女性占比（%）',
+                            data: [34.90, 35.90, 37.20, 37.40, 38.60, 39.40, 39.20, 41.00, 41.70, 43.00, 44.20],
+                            backgroundColor: 'rgba(185, 103, 255, 0.6)',
+                            borderColor: 'rgba(185, 103, 255, 1)',
+                            borderWidth: 1,
+                            yAxisID: 'y'
+                        },
+                        {
+                            label: '较上年增减（百分点）',
+                            data: [null, 0.6, 0.9, -0.1, 0.4, 0.3, -0.3, 1.1, 0.7, 0.7, 0.3],
+                            type: 'line',
+                            fill: false,
+                            backgroundColor: 'rgba(255, 121, 198, 1)',
+                            borderColor: 'rgba(255, 121, 198, 1)',
+                            borderWidth: 2,
+                            pointBackgroundColor: '#ffffff',
+                            pointBorderColor: 'rgba(255, 121, 198, 1)',
+                            pointRadius: 6,
+                            pointHoverRadius: 9,
+                            yAxisID: 'y1'
+                        }
+                    ]
+                },
+                options: {
+                    interaction: { mode: 'index', intersect: false },
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            labels: { color: '#f0f0f0', font: { size: 14 }, padding: 20 }
+                        },
+                        title: {
+                            display: true,
+                            text: '2014-2024年女性农民工占比变化',
+                            color: '#ffffff',
+                            font: { size: 16, weight: 'bold' },
+                            padding: { bottom: 20 }
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(10, 14, 23, 0.9)',
+                            titleColor: '#ffffff',
+                            bodyColor: '#e0e0e0',
+                            borderColor: 'rgba(255, 220, 80, 0.3)',
+                            borderWidth: 1,
+                            padding: 12,
+                            callbacks: {
+                                label: (ctx) => {
+                                    let label = ctx.dataset.label + ': ';
+                                    return ctx.datasetIndex === 3 
+                                        ? label + (ctx.raw >= 0 ? '+' : '') + ctx.raw + ' 百分点'
+                                        : label + ctx.raw + ' %';
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#d0d0d0' } },
+                        y: {
+                            type: 'linear',
+                            position: 'left',
+                            title: { display: true, text: '占比（%）', color: '#d0d0d0' },
+                            min: 25, max: 45,
+                            grid: { color: 'rgba(255,255,255,0.05)' },
+                            ticks: { color: '#d0d0d0' }
+                        },
+                        y1: {
+                            type: 'linear',
+                            position: 'right',
+                            title: { display: true, text: '较上年增减（百分点）', color: '#d0d0d0' },
+                            min: -1, max: 1.5,
+                            grid: { display: false },
+                            ticks: { color: '#d0d0d0', callback: (v) => (v >= 0 ? '+' : '') + v }
+                        }
+                    },
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
+            
+            // --------------------------
+            // 5. 国家骨干冷链物流基地地图
+            // --------------------------
+            var myChart = echarts.init(document.getElementById('map-container'));
+
+            var baseData = [
+              { name: '北京', bases: ['平谷国家骨干冷链物流基地（第一批）'] },
+              { name: '重庆', bases: ['沙坪坝国家骨干冷链物流基地（第二批）', '巴南国家骨干冷链物流基地（第三批）'] },
+              { name: '浙江', bases: ['北仑(奉化)国家骨干冷链物流基地（第二批）', '嘉兴国家骨干冷链物流基地（第二批）', '台州国家骨干冷链物流基地（第三批）', '舟山国家骨干冷链物流基地（第一批）', '杭州国家骨干冷链物流基地（第四批）'] },
+              { name: '云南', bases: ['昆明国家骨干冷链物流基地（第一批）'] },
+              { name: '新疆', bases: ['乌鲁木齐国家骨干冷链物流基地（第二批）', '阿克苏国家骨干冷链物流基地（第三批）', '喀什国家骨干冷链物流基地（第三批）'] },
+              { name: '新疆兵团', bases: ['阿拉尔国家骨干冷链物流基地（第三批）'] },
+              { name: '天津', bases: ['滨海新区中心渔港国家骨干冷链物流基地（第二批）', '滨海新区东疆综合保税区国家骨干冷链物流基地（第三批）'] },
+              { name: '四川', bases: ['成都国家骨干冷链物流基地（第二批）', '绵阳国家骨干冷链物流基地（第三批）', '自贡国家骨干冷链物流基地（第一批）'] },
+              { name: '上海', bases: ['临港新片区国家骨干冷链物流基地（第二批）'] },
+              { name: '陕西', bases: ['延安国家骨干冷链物流基地（第二批）', '西安国家骨干冷链物流基地（第三批）', '宝鸡国家骨干冷链物流基地（第一批）'] },
+              { name: '山西', bases: ['晋中国家骨干冷链物流基地（第一批）'] },
+              { name: '山东', bases: ['西海岸新区国家骨干冷链物流基地（第一批）', '威海国家骨干冷链物流基地（第二批）', '烟台国家骨干冷链物流基地（第三批）', '潍坊国家骨干冷链物流基地（第三批）', '济南国家骨干冷链物流基地（第一批）'] },
+              { name: '青海', bases: ['西宁国家骨干冷链物流基地（第二批）'] },
+              { name: '内蒙古', bases: ['呼和浩特国家骨干冷链物流基地（第二批）', '通辽国家骨干冷链物流基地（第三批）', '巴彦淖尔国家骨干冷链物流基地（第一批）'] },
+              { name: '辽宁', bases: ['沈阳国家骨干冷链物流基地（第二批）', '营口国家骨干冷链物流基地（第一批）'] },
+              { name: '江西', bases: ['南昌国家骨干冷链物流基地（第三批）'] },
+              { name: '江苏', bases: ['常州国家骨干冷链物流基地（第二批）', '南京国家骨干冷链物流基地（第三批）', '苏州国家骨干冷链物流基地（第一批）'] },
+              { name: '吉林', bases: ['四平国家骨干冷链物流基地（第二批）'] },
+              { name: '湖南', bases: ['长沙国家骨干冷链物流基地（第二批）', '衡阳国家骨干冷链物流基地（第三批）', '永州国家骨干冷链物流基地（第三批）', '怀化国家骨干冷链物流基地（第一批）', '岳阳国家骨干冷链物流基地（第四批）'] },
+              { name: '湖北', bases: ['宜昌国家骨干冷链物流基地（第二批）', '襄阳国家骨干冷链物流基地（第三批）', '武汉国家骨干冷链物流基地（第一批）'] },
+              { name: '黑龙江', bases: ['哈尔滨国家骨干冷链物流基地（第二批）', '齐齐哈尔国家骨干冷链物流基地（第三批）'] },
+              { name: '河南', bases: ['商丘国家骨干冷链物流基地（第二批）', '新乡国家骨干冷链物流基地（第三批）', '漯河国家骨干冷链物流基地（第三批）', '郑州国家骨干冷链物流基地（第一批）', '洛阳国家骨干冷链物流基地（第四批）'] },
+              { name: '河北', bases: ['保定国家骨干冷链物流基地（第二批）', '秦皇岛国家骨干冷链物流基地（第三批）'] },
+              { name: '贵州', bases: ['贵阳国家骨干冷链物流基地（第二批）'] },
+              { name: '广西', bases: ['玉林国家骨干冷链物流基地（第二批）', '防城港国家骨干冷链物流基地（第三批）'] },
+              { name: '广东', bases: ['江门国家骨干冷链物流基地（第二批）', '湛江国家骨干冷链物流基地（第三批）', '东莞国家骨干冷链物流基地（第一批）'] },
+              { name: '甘肃', bases: ['兰州国家骨干冷链物流基地（第二批）', '张掖国家骨干冷链物流基地（第三批）'] },
+              { name: '福建', bases: ['福州国家骨干冷链物流基地（第一批）'] },
+              { name: '安徽', bases: ['蚌埠国家骨干冷链物流基地（第二批）', '宿州国家骨干冷链物流基地（第三批）', '阜阳国家骨干冷链物流基地（第三批）'] }
+            ];
+
+            var seriesData = baseData.map(item => ({
+              name: item.name,
+              value: item.bases.length,
+              bases: item.bases
+            }));
+
+            var option = {
+              title: {
+                text: '国家骨干冷链物流基地分布',
+                left: 'center',
+                textStyle: { fontSize: 20, color: '#ffffff' }
+              },
+              tooltip: {
+                trigger: 'item',
+                backgroundColor: 'rgba(10, 14, 23, 0.9)',
+                borderColor: 'rgba(255, 220, 80, 0.3)',
+                borderWidth: 1,
+                textStyle: { color: '#ffffff' },
+                formatter: function (params) {
+                  let tooltipHtml = `<div style="font-weight: bold;">${params.name}</div>`;
+                  if (params.data.bases && params.data.bases.length > 0) {
+                    tooltipHtml += '<div style="margin-top: 4px;">基地列表：</div>';
+                    params.data.bases.forEach(base => {
+                      tooltipHtml += `<div>${base}</div>`;
+                    });
+                  } else {
+                    tooltipHtml += '<div>暂无国家骨干冷链物流基地</div>';
+                  }
+                  return tooltipHtml;
+                }
+              },
+              visualMap: {
+                type: 'piecewise',
+                pieces: [
+                  { min: 4, label: '4个及以上', color: '#b967ff' },
+                  { min: 3, max: 3, label: '3个', color: '#8c6aff' },
+                  { min: 2, max: 2, label: '2个', color: '#5e8fff' },
+                  { min: 1, max: 1, label: '1个', color: '#5ecfff' },
+                  { value: 0, label: '0个', color: '#333344' }
+                ],
+                orient: 'horizontal',
+                left: 'center',
+                bottom: 20,
+                textStyle: { color: '#ffffff' }
+              },
+              series: [
+                {
+                  name: '国家骨干冷链物流基地',
+                  type: 'map',
+                  mapType: 'china',
+                  roam: true,
+                  label: { show: true, fontSize: 10, color: '#ffffff' },
+                  itemStyle: {
+                    areaColor: '#333344',
+                    borderColor: 'rgba(255, 220, 80, 0.3)'
+                  },
+                  emphasis: {
+                    itemStyle: {
+                      areaColor: 'rgba(94, 143, 255, 0.3)'
+                    }
+                  },
+                  data: seriesData
+                }
+              ]
+            };
+
+            myChart.setOption(option);
+            
+            // --------------------------
+            // 6. 农村女性教育数据图表
+            // --------------------------
+            // 6.1 女性教育与培训综合数据图表
+            const comprehensiveCtx = document.getElementById('comprehensiveChart').getContext('2d');
+            new Chart(comprehensiveCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['平均受教育年限(年)', '非农职业教育(%)', '农业职业教育(%)', '非农培训(%)', '农业培训(%)', '全年培训时间(天)'],
+                    datasets: [{
+                        label: '数值',
+                        data: [7.3, 2.3, 1.11, 2.4, 4.04, 0.62],
+                        backgroundColor: 'rgba(94, 143, 255, 0.7)',
+                        borderColor: 'rgba(94, 143, 255, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            backgroundColor: 'rgba(10, 14, 23, 0.9)',
+                            titleColor: '#ffffff',
+                            bodyColor: '#e0e0e0',
+                            borderColor: 'rgba(255, 220, 80, 0.3)',
+                            callbacks: {
+                                label: function(context) {
+                                    const labels = context.chart.data.labels;
+                                    const unit = labels[context.dataIndex].includes('年') ? '年' : 
+                                                 labels[context.dataIndex].includes('天') ? '天' : '%';
+                                    return `${context.dataset.label}: ${context.parsed.y}${unit}`;
+                                }
+                            }
+                        },
+                        datalabels: {
+                            anchor: 'end',
+                            align: 'top',
+                            formatter: (value, context) => {
+                                const labels = context.chart.data.labels;
+                                const unit = labels[context.dataIndex].includes('年') ? '年' : 
+                                             labels[context.dataIndex].includes('天') ? '天' : '%';
+                                return value + unit;
+                            },
+                            color: '#fff',
+                            font: { weight: 'bold' }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: { color: 'rgba(255, 255, 255, 0.1)' },
+                            ticks: { color: '#b3b3b3' }
+                        },
+                        x: { 
+                            grid: { display: false },
+                            ticks: { color: '#b3b3b3' }
+                        }
+                    },
+                    animation: { duration: 2000, easing: 'easeOutQuart' }
+                }
+            });
+            
+            // 6.2 性别文盲率对比图表
+            const genderCtx = document.getElementById('genderChart').getContext('2d');
+            new Chart(genderCtx, {
+                type: 'line',
+                data: {
+                    labels: ['全国', '城市', '镇', '乡村'],
+                    datasets: [
+                        {
+                            label: '女性文盲率 (%)',
+                            data: [4.95, 1.96, 4.18, 9.07],
+                            borderColor: 'rgba(185, 103, 255, 1)',
+                            backgroundColor: 'rgba(185, 103, 255, 0.1)',
+                            borderWidth: 4,
+                            pointBackgroundColor: 'rgba(185, 103, 255, 1)',
+                            pointRadius: 8,
+                            pointHoverRadius: 10,
+                            fill: true,
+                            tension: 0.2
+                        },
+                        {
+                            label: '男性文盲率 (%)',
+                            data: [1.62, 0.57, 1.35, 2.98],
+                            borderColor: 'rgba(94, 143, 255, 1)',
+                            backgroundColor: 'rgba(94, 143, 255, 0.1)',
+                            borderWidth: 4,
+                            pointBackgroundColor: 'rgba(94, 143, 255, 1)',
+                            pointRadius: 8,
+                            pointHoverRadius: 10,
+                            fill: true,
+                            tension: 0.2
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            labels: { 
+                                color: '#f0f0f0',
+                                font: { size: 16 } 
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(10, 14, 23, 0.9)',
+                            titleColor: '#ffffff',
+                            bodyColor: '#e0e0e0',
+                            borderColor: 'rgba(255, 220, 80, 0.3)',
+                            callbacks: {
+                                label: function(context) {
+                                    return `${context.dataset.label}: ${context.parsed.y}%`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: { color: 'rgba(255, 255, 255, 0.1)' },
+                            ticks: {
+                                color: '#b3b3b3',
+                                callback: function(value) { return value + '%'; }
+                            },
+                            title: {
+                                display: true,
+                                text: '文盲率 (%)',
+                                color: '#b3b3b3',
+                                font: { size: 16, weight: 'bold' }
+                            }
+                        },
+                        x: { 
+                            grid: { color: 'rgba(255, 255, 255, 0.1)' },
+                            ticks: { color: '#b3b3b3' }
+                        }
+                    },
+                    animation: { duration: 2000, easing: 'easeOutQuart' }
+                }
+            });
+            
+            // 图表自适应窗口
+            window.addEventListener('resize', () => {
+                myChart.resize();
+            });
+
+            // --------------------------
+            // 7. 社交互动功能
+            // --------------------------
+            // DOM元素缓存
+            const likeBtn = document.getElementById('likeBtn');
+            const likeCount = document.getElementById('likeCount');
+            const supportBtn = document.getElementById('supportBtn');
+            const supportCount = document.getElementById('supportCount');
+            const commentBtn = document.getElementById('commentBtn');
+            const commentCount = document.getElementById('commentCount');
+            const commentSection = document.getElementById('commentSection');
+            const commentInput = document.getElementById('commentInput');
+            const submitComment = document.getElementById('submitComment');
+            const commentsList = document.getElementById('commentsList');
+            const shareBtn = document.getElementById('shareBtn');
+            const shareCount = document.getElementById('shareCount');
+            const shareModal = document.getElementById('shareModal');
+            const closeShareModal = document.getElementById('closeShareModal');
+            const copyUrl = document.getElementById('copyUrl');
+            const shareNow = document.getElementById('shareNow');
+
+            // 数据初始化
+            let isLiked = false;
+            let isSupported = false;
+            let likeCounter = 256;
+            let supportCounter = 428;
+            let commentCounter = 63;
+            let shareCounter = 89;
+
+            // 点赞功能
+            likeBtn.addEventListener('click', () => {
+                isLiked = !isLiked;
+                updateLikeState();
+            });
+
+            function updateLikeState() {
+                if (isLiked) {
+                    likeCounter++;
+                    likeBtn.classList.add('active');
+                } else {
+                    likeCounter--;
+                    likeBtn.classList.remove('active');
+                }
+                likeCount.textContent = likeCounter;
+            }
+
+            // 支持功能
+            supportBtn.addEventListener('click', () => {
+                isSupported = !isSupported;
+                updateSupportState();
+            });
+
+            function updateSupportState() {
+                if (isSupported) {
+                    supportCounter++;
+                    supportBtn.classList.add('active');
+                } else {
+                    supportCounter--;
+                    supportBtn.classList.remove('active');
+                }
+                supportCount.textContent = supportCounter;
+            }
+
+            // 评论功能
+            commentBtn.addEventListener('click', () => {
+                commentSection.classList.toggle('active');
+                commentBtn.classList.toggle('active');
+                setTimeout(() => commentInput.focus(), 300);
+            });
+
+            submitComment.addEventListener('click', () => {
+                const text = commentInput.value.trim();
+                if (text) {
+                    addComment(text);
+                    resetCommentForm();
+                }
+            });
+
+            commentInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') submitComment.click();
+            });
+
+            function addComment(text) {
+                const commentDiv = createCommentElement(text);
+                commentsList.insertAdjacentHTML('afterbegin', commentDiv);
+                commentCounter++;
+                commentCount.textContent = commentCounter;
+            }
+
+            function createCommentElement(text) {
+                const user = getRandomUser();
+                const timeText = getTimeText();
+                return `
+                    <div class="comment">
+                        <div class="comment-header">
+                            <div class="comment-avatar">${user.initial}</div>
+                            <div class="comment-author">${user.name}</div>
+                            <div class="comment-time">${timeText}</div>
+                        </div>
+                        <div class="comment-text">${text}</div>
+                    </div>
+                `;
+            }
+
+            function getRandomUser() {
+                const names = ['李芳', '王秀', '张敏', '赵静', '陈丽', '刘燕', '黄英', '吴兰'];
+                const name = names[Math.floor(Math.random() * names.length)];
+                return {
+                    name,
+                    initial: name.charAt(0)
+                };
+            }
+
+            function getTimeText() {
+                const now = new Date();
+                return `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+            }
+
+            function resetCommentForm() {
+                commentInput.value = '';
+            }
+
+            // 分享功能
+            shareBtn.addEventListener('click', () => {
+                shareModal.classList.add('active');
+                shareCounter++;
+                shareCount.textContent = shareCounter;
+                shareBtn.classList.add('active');
+            });
+
+            closeShareModal.addEventListener('click', () => {
+                shareModal.classList.remove('active');
+            });
+
+            copyUrl.addEventListener('click', () => {
+                const urlInput = document.querySelector('.share-url input');
+                urlInput.select();
+                document.execCommand('copy');
+                
+                // 显示复制成功提示
+                const originalText = copyUrl.textContent;
+                copyUrl.textContent = '已复制';
+                setTimeout(() => {
+                    copyUrl.textContent = originalText;
+                }, 2000);
+            });
+
+            shareNow.addEventListener('click', () => {
+                alert('分享成功！感谢您的支持！');
+                shareModal.classList.remove('active');
+            });
+
+            // 初始化一些评论
+            const initialComments = [
+                "希望能有更多培训机会给农村女性，让她们掌握数字技能",
+                "小英的故事很感人，每个人都应该有追求梦想的权利",
+                "数字经济确实给农村带来了新机会，但基础设施还需要加强"
+            ];
+            
+            initialComments.forEach(comment => {
+                addComment(comment);
+            });
+            // 重置计数器，因为初始评论已经添加
+            commentCounter = 63;
+            commentCount.textContent = commentCounter;
+        });
+    </script>
+
+
+    </body></html>
+
